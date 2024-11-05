@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Timetable Maker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+        }
+        .form-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .title {
+            font-family: 'Times New Roman', serif;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto p-6">
+        <h1 class="text-4xl font-bold text-center mb-8 title">AI Timetable Maker</h1>
+        <div class="form-container bg-white p-6 rounded-lg shadow-lg">
+            <form id="timetableForm" class="space-y-4">
+                <div>
+                    <label for="studyHours" class="block text-lg font-medium">Study Hours per Day (Monday to Thursday)</label>
+                    <input type="number" id="studyHours" name="studyHours" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="fridayHours" class="block text-lg font-medium">Study Hours on Friday</label>
+                    <input type="number" id="fridayHours" name="fridayHours" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="startTime" class="block text-lg font-medium">Start Time (24-hour format, e.g., 9)</label>
+                    <input type="number" id="startTime" name="startTime" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="breakTime" class="block text-lg font-medium">Break Time (minutes)</label>
+                    <input type="number" id="breakTime" name="breakTime" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="subjects" class="block text-lg font-medium">Subjects (comma separated)</label>
+                    <input type="text" id="subjects" name="subjects" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div class="flex justify-between">
+                    <button type="button" id="generateTimetable" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Generate AI Timetable</button>
+                    <button type="button" id="studyTips" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Study Tips and Ideas</button>
+                </div>
+            </form>
+        </div>
+        <div id="timetableResult" class="mt-8 hidden">
+            <h2 class="text-2xl font-bold mb-4">Generated Timetable</h2>
+            <div id="timetable" class="bg-white p-6 rounded-lg shadow-lg text-gray-800"></div>
+            <button id="downloadTimetable" class="mt-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">Download Timetable</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('generateTimetable').addEventListener('click', function(event) {
+            const studyHours = parseInt(document.getElementById('studyHours').value);
+            const fridayHours = parseInt(document.getElementById('fridayHours').value);
+            const startTime = parseInt(document.getElementById('startTime').value);
+            const breakTime = parseInt(document.getElementById('breakTime').value);
+            const subjects = document.getElementById('subjects').value.split(',');
+            
+            let timetableHTML = '<table class="min-w-full bg-white text-gray-800"><thead><tr><th class="py-2">Day</th><th class="py-2">Schedule</th></tr></thead><tbody>';
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            days.forEach(day => {
+                timetableHTML += `<tr><td class="border px-4 py-2">${day}</td><td class="border px-4 py-2">`;
+
+                const periods = (day === 'Friday') ? fridayHours : studyHours;
+                let currentTime = startTime;
+
+                for (let i = 0; i < periods; i++) {
+                    const subject = subjects[i % subjects.length].trim();
+                    let endTime = currentTime + 1;
+                    timetableHTML += `${currentTime}:00 - ${endTime}:00 : ${subject} <br>`;
+                    currentTime = endTime;
+                }
+
+                timetableHTML += '</td></tr>';
+            });
+            timetableHTML += '</tbody></table>';
+
+            document.getElementById('timetable').innerHTML = timetableHTML;
+            document.getElementById('timetableResult').classList.remove('hidden');
+        });
+
+        document.getElementById('downloadTimetable').addEventListener('click', function() {
+            html2canvas(document.getElementById('timetable')).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'timetable.png';
+                link.click();
+            });
+        });
+
+        document.getElementById('studyTips').addEventListener('click', function() {
+            window.open('https://www.youtube.com/results?search_query=study+motivation', '_blank');
+        });
+    </script>
+</body>
+</html>
